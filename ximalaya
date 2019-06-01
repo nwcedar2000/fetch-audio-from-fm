@@ -70,13 +70,17 @@ def convert_m4a_to_mp3(name)
 	end
 end
 
-def fetch_audio_file(url, name)
-	return if File.exist?(name + '.m4a') or File.exist?(name + '.mp3') or url == nil
+def fetch_audio_file(url, name, folder)
+	return if File.exist?(folder + "\\" + name + '.m4a') or File.exist?(folder + "\\" + name + '.mp3') or url == nil
 	puts 'downloading ' + name + '...'
-	open(name + '.m4a', 'wb') do |file|
+	open(folder + "\\" + name + '.m4a', 'wb') do |file|
 		file << open(url).read
 	end
-	puts 'download ' + name + ' successfully'
+	puts 'download ' + folder + "\\" + name + ' successfully'
+end
+
+def directory_exists?(directory)
+	File.directory?(directory)
 end
 
 def fetch_audio(argv)
@@ -86,7 +90,12 @@ def fetch_audio(argv)
 	end
 
 	url = argv[0]
-	filter = argv[1]
+	downloadFolder = argv[1]
+	filter = argv[2]
+
+	if not (directory_exists?(downloadFolder))
+		Dir.mkdir downloadFolder
+	end
 
 	queue = Queue.new
 	hash = fetch_sound_list(url)
@@ -105,7 +114,7 @@ def fetch_audio(argv)
 	begin
 		hash.keys.each do |name|
 			url = hash[name]
-			fetch_audio_file(url, name)
+			fetch_audio_file(url, name, downloadFolder)
 			queue.push name
 		end
 	rescue Exception => e
